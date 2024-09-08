@@ -1,3 +1,4 @@
+import 'formdata-polyfill';
 import fetch from 'node-fetch';
 
 exports.handler = async function(event, context) {
