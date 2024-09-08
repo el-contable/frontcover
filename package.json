@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/vision": "^4.3.2",
     "node-fetch": "^2.7.0",
     "sharp": "^0.33.5"
   }

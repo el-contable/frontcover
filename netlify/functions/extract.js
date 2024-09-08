@@ -1,5 +1,9 @@
 const sharp = require('sharp');
 const fetch = require('node-fetch');
+const vision = require('@google-cloud/vision');
+
+// Initialize Google Vision client
+const client = new vision.ImageAnnotatorClient();
 
 exports.handler = async function(event, context) {
   try {
@@ -58,10 +62,23 @@ exports.handler = async function(event, context) {
       };
     }
 
-    // Convert the processed buffer back to base64
-    const base64ProcessedImage = processedImageBuffer.toString('base64');
+    // Google Vision API for text extraction (OCR)
+    const [visionResult] = await client.textDetection({
+      image: { content: processedImageBuffer.toString('base64') }
+    });
 
-    // Send the base64-encoded processed image to OpenAI API
+    const extractedText = visionResult.textAnnotations[0]?.description || '';
+    console.log("Extracted text from image:", extractedText);
+
+    if (!extractedText) {
+      console.error("No text detected in the image.");
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'No text detected in the image' })
+      };
+    }
+
+    // Send the extracted text to OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -73,19 +90,18 @@ exports.handler = async function(event, context) {
         messages: [
           {
             role: "system",
-            content: "You are an assistant that extracts book titles and authors from images of book covers."
+            content: "You are an assistant that extracts book titles and authors from text."
           },
           {
             role: "user",
-            content: `Here is an image of a book cover in base64 format: "${base64ProcessedImage}". Please extract the book title and author.`
+            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book title and author?`
           }
         ]
       })
     });
 
     const rawResponseBody = await response.text();  // Log raw response for debugging
-    console.log("Raw Response Body:", rawResponseBody);
-    console.log("Response Status:", response.status);
+    console.log("Raw Response Body from OpenAI:", rawResponseBody);
 
     // Handle non-JSON responses gracefully
     if (response.headers.get('content-type') && response.headers.get('content-type').includes('application/json')) {
@@ -95,7 +111,6 @@ exports.handler = async function(event, context) {
         console.log("Parsed JSON Data:", data);
       } catch (jsonError) {
         console.error("Error parsing JSON:", jsonError.message);
-        console.log("Raw Response Body that caused the error:", rawResponseBody); // Log raw response
         return {
           statusCode: 500,
           body: JSON.stringify({ error: `Error parsing JSON response: ${jsonError.message}` })
@@ -118,7 +133,7 @@ exports.handler = async function(event, context) {
         };
       }
     } else {
-      console.error("Non-JSON Response:", rawResponseBody);
+      console.error("Non-JSON Response from OpenAI:", rawResponseBody);
       return {
         statusCode: 500,
         body: JSON.stringify({ error: "Received non-JSON response from OpenAI API" })
@@ -126,7 +141,6 @@ exports.handler = async function(event, context) {
     }
   } catch (error) {
     console.error("Error occurred during processing:", error.message || error);
-
     return {
       statusCode: 500,
       body: JSON.stringify({ error: `Something went wrong during processing: ${error.message || error}` })
