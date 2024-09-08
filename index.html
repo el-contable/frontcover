@@ -113,20 +113,33 @@
         <input type="file" accept="image/*" id="upload-book-image" style="display:none;">
 
         <div class="book-list">
-            <div class="book-card">
-                <div class="book-title">The Great Gatsby</div>
-                <div class="book-author">F. Scott Fitzgerald</div>
-                <i class="fas fa-trash-alt trash-icon"></i>
-            </div>
-            <div class="book-card">
-                <div class="book-title">To Kill a Mockingbird</div>
-                <div class="book-author">Harper Lee</div>
-                <i class="fas fa-trash-alt trash-icon"></i>
-            </div>
+            <!-- Dynamically loaded books will go here -->
         </div>
     </div>
 
     <script>
+        // Retrieve books from localStorage and display them
+        function loadBooks() {
+            const bookList = document.querySelector('.book-list');
+            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+            savedBooks.forEach(book => {
+                const bookCard = createBookCard(book.title, book.author);
+                bookList.appendChild(bookCard);
+            });
+        }
+
+        // Save books to localStorage
+        function saveBooks() {
+            const bookCards = document.querySelectorAll('.book-card');
+            const books = [];
+            bookCards.forEach(card => {
+                const title = card.querySelector('.book-title').textContent;
+                const author = card.querySelector('.book-author').textContent;
+                books.push({ title, author });
+            });
+            localStorage.setItem('books', JSON.stringify(books));
+        }
+
         // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
             document.getElementById('upload-book-image').click(); // Trigger the file upload dialog
@@ -167,6 +180,7 @@
                     cardElement.classList.add('swiped'); // Add swipe animation class
                     setTimeout(() => {
                         cardElement.remove(); // Remove after animation
+                        saveBooks(); // Update localStorage after deletion
                     }, 300); // Delay to allow animation
                 } else {
                     cardElement.style.transform = ''; // Reset position if not swiped far enough
@@ -209,23 +223,23 @@
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
+            const bookCard = createBookCard(bookTitle, bookAuthor);
+    
+            bookList.appendChild(bookCard); // Add the new book card to the list
+            saveBooks(); // Save the newly added book to localStorage
+        }
+
+        // Function to create a book card
+        function createBookCard(title, author) {
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
             bookCard.innerHTML = `
-                <div class="book-title">${bookTitle}</div>
-                <div class="book-author">${bookAuthor}</div>
+                <div class="book-title">${title}</div>
+                <div class="book-author">${author}</div>
                 <i class="fas fa-trash-alt trash-icon"></i>
             `;
-
-            // Add swipe to delete functionality
-            addSwipeToDelete(bookCard);
-    
-            bookList.appendChild(bookCard); // Add the new book card to the list
+            addSwipeToDelete(bookCard); // Enable swipe-to-delete functionality
+            return bookCard;
         }
 
-        // Add swipe to delete to all existing cards
-        document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
-
-    </script>    
-</body>
-</html>
+        // Load books from localStorage
