@@ -58,10 +58,16 @@
             margin-top: 30px;
         }
         .book-card {
+            position: relative;
             background-color: #f8f9fa;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .swiped {
+            transform: translateX(-100%);
+            opacity: 0;
         }
         .book-title {
             font-size: 18px;
@@ -98,11 +104,9 @@
                 <div class="book-title">To Kill a Mockingbird</div>
                 <div class="book-author">Harper Lee</div>
             </div>
-            <!-- Can add more example book cards -->
         </div>
     </div>
 
-    <!-- Script to trigger file upload, backend processing and list creation -->
     <script>
         // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
@@ -114,6 +118,30 @@
             let selectedImage = event.target.files[0]; // Store the selected image
             sendToBackend(selectedImage); // Send this image to the backend server for processing
         });
+
+        // Function to handle swipe to delete
+        function addSwipeToDelete(cardElement) {
+            let touchstartX = 0;
+            let touchendX = 0;
+
+            cardElement.addEventListener('touchstart', function(event) {
+                touchstartX = event.changedTouches[0].screenX;
+            });
+
+            cardElement.addEventListener('touchend', function(event) {
+                touchendX = event.changedTouches[0].screenX;
+                handleSwipe(cardElement);
+            });
+
+            function handleSwipe(cardElement) {
+                if (touchendX < touchstartX - 50) {  // Swipe left threshold
+                    cardElement.classList.add('swiped'); // Add swipe animation class
+                    setTimeout(() => {
+                        cardElement.remove(); // Remove after animation
+                    }, 300); // Delay to allow animation
+                }
+            }
+        }
     
         // Function to send the image to the backend server
         function sendToBackend(imageFile) {
@@ -149,15 +177,18 @@
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
-            const bookCard = `
-                <div class="book-card">
-                    <div class="book-title">${bookTitle}</div>
-                    <div class="book-author">${bookAuthor}</div>
-                </div>
+            const bookCard = document.createElement('div');
+            bookCard.classList.add('book-card');
+            bookCard.innerHTML = `
+                <div class="book-title">${bookTitle}</div>
+                <div class="book-author">${bookAuthor}</div>
             `;
-    bookList.innerHTML += bookCard; // Add the new book card
-}
 
+            // Add swipe to delete functionality
+            addSwipeToDelete(bookCard);
+    
+            bookList.appendChild(bookCard); // Add the new book card to the list
+        }
     </script>    
 </body>
 </html>
