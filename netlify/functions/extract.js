@@ -85,6 +85,7 @@ exports.handler = async function(event, context) {
 
     const rawResponseBody = await response.text();  // Log raw response for debugging
     console.log("Raw Response Body:", rawResponseBody);
+    console.log("Response Status:", response.status);
 
     // Handle non-JSON responses gracefully
     if (response.headers.get('content-type') && response.headers.get('content-type').includes('application/json')) {
@@ -93,7 +94,8 @@ exports.handler = async function(event, context) {
         data = JSON.parse(rawResponseBody);
         console.log("Parsed JSON Data:", data);
       } catch (jsonError) {
-        console.error("Error parsing JSON:", jsonError);
+        console.error("Error parsing JSON:", jsonError.message);
+        console.log("Raw Response Body that caused the error:", rawResponseBody); // Log raw response
         return {
           statusCode: 500,
           body: JSON.stringify({ error: `Error parsing JSON response: ${jsonError.message}` })
