@@ -1,9 +1,15 @@
 const sharp = require('sharp');
 const fetch = require('node-fetch');
 const vision = require('@google-cloud/vision');
+const base64 = require('base64-js'); // If needed, install this with npm
 
-// Initialize Google Vision client
-const client = new vision.ImageAnnotatorClient();
+// Decode your Google Cloud service account key from Base64
+const decodedCredentials = Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+
+// Initialize the Google Vision client with the decoded credentials
+const client = new vision.ImageAnnotatorClient({
+  credentials: JSON.parse(decodedCredentials)
+});
 
 exports.handler = async function(event, context) {
   try {
