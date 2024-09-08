@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Tracker PWA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: white;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .settings-icon {
+            font-size: 24px;
+            color: #007BFF;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .settings-icon:hover {
+            color: #0056b3;
+        }
+        .add-book-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .add-book-btn:hover {
+            background-color: #0056b3;
+        }
+        .book-list {
+            margin-top: 30px;
+        }
+        .book-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .book-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .book-author {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div></div> <!-- Empty div for spacing -->
+            <h1>My Book Collection</h1>
+            <a href="settings.html" class="settings-icon">
+                <i class="fas fa-cog"></i>
+            </a>
+        </div>
+        <button class="add-book-btn">
+            <i class="fas fa-plus"></i> Add Book
+        </button>
+
+        <!-- Hidden file input for image upload -->
+        <input type="file" accept="image/*" id="upload-book-image" style="display:none;">
+
+        <div class="book-list">
+            <div class="book-card">
+                <div class="book-title">The Great Gatsby</div>
+                <div class="book-author">F. Scott Fitzgerald</div>
+            </div>
+            <div class="book-card">
+                <div class="book-title">To Kill a Mockingbird</div>
+                <div class="book-author">Harper Lee</div>
+            </div>
+            <!-- Add more book cards as needed -->
+        </div>
+    </div>
+
+    <!-- Script to trigger file upload when Add Book button is clicked -->
+    <script>
+        document.querySelector('.add-book-btn').addEventListener('click', function() {
+            document.getElementById('upload-book-image').click();
+        });
+    </script>
+</body>
+</html>
