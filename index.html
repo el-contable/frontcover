@@ -141,13 +141,23 @@
         // Function to display the parsed book title and author on the home screen
         function displayDetectedText(text) {
             const bookList = document.querySelector('.book-list');
+        
+            // Assuming the format is "The book title is 'TITLE' and the author is AUTHOR."
+            const titleMatch = text.match(/"([^"]+)"/); // Extracts title between quotes
+            const authorMatch = text.match(/author is ([^.]+)\./); // Extracts author 
+    
+            const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
+            const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
+
             const bookCard = `
                 <div class="book-card">
-                    <div class="book-title">${text}</div>
+                    <div class="book-title">${bookTitle}</div>
+                    <div class="book-author">${bookAuthor}</div>
                 </div>
             `;
-            bookList.innerHTML += bookCard; // Add the parsed result as a new book card
-        }
+    bookList.innerHTML += bookCard; // Add the new book card
+}
+
     </script>    
 </body>
 </html>
