@@ -1,7 +1,7 @@
-import 'formdata-polyfill';
-import fetch from 'node-fetch';
+import fetch from 'node-fetch'; // Using node-fetch with ESM
 
-exports.handler = async function(event, context) {
+// Use ESM export syntax
+export async function handler(event, context) {
   try {
     // Log the incoming event to verify if the function is being triggered
     console.log("Function triggered with event:", event);
