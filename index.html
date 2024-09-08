@@ -17,6 +17,7 @@
         .container {
             max-width: 800px;
             margin: 50px auto;
+            overflow: hidden; /* Prevent scrolling while swiping */
         }
         .header {
             display: flex;
@@ -190,6 +191,7 @@
             });
 
             cardElement.addEventListener('touchmove', function(event) {
+                event.preventDefault();  // Prevent the whole page from moving
                 const currentX = event.changedTouches[0].screenX;
                 const deltaX = currentX - touchstartX;
 
