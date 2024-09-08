@@ -208,7 +208,7 @@
             });
 
             function handleSwipe(cardElement) {
-                if (touchendX < touchstartX - 50) {  // Swipe left threshold
+                if (touchendX < touchstartX - 100) {  // Swipe left threshold
                     cardElement.classList.add('swiped'); // Add swipe animation class
                     setTimeout(() => {
                         cardElement.remove(); // Remove after animation
