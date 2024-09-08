@@ -2,14 +2,16 @@ const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
   try {
-    // Parse the incoming request body to get the base64-encoded image
+    // Parse the incoming request body
     const { image } = JSON.parse(event.body);
 
-    // Make the request to OpenAI API for extracting book title and author
+    console.log("Received image for processing...");
+
+    // Make the request to OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Securely using environment variable for the API key
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Ensure the API key is set
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -27,16 +29,24 @@ exports.handler = async function(event, context) {
       })
     });
 
-    const data = await response.json(); // Parse response from OpenAI API
-    const parsedText = data.choices[0].message.content; // Extract the parsed text (book title and author)
+    const data = await response.json();
+    console.log("OpenAI response:", data);
 
-    // Return the parsed text (book title and author) to the frontend
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ result: parsedText })
-    };
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      const parsedText = data.choices[0].message.content;
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ result: parsedText })
+      };
+    } else {
+      console.error("Unexpected response format:", data);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Invalid response from OpenAI" })
+      };
+    }
   } catch (error) {
-    console.error(error); // Log any errors
+    console.error("Error during processing:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Something went wrong' })
