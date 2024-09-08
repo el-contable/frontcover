@@ -24,11 +24,11 @@ exports.handler = async function(event, context) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Check if API key is correctly set
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo",
+        model: "gpt-4-turbo", // Make sure this model is correct and available
         messages: [
           {
             role: "system",
@@ -45,6 +45,15 @@ exports.handler = async function(event, context) {
     // Log the raw response status and headers to inspect the API response
     console.log("Raw Response Status:", response.status);
     console.log("Raw Response Headers:", response.headers.raw());
+
+    // Handle 404 Not Found errors specifically
+    if (response.status === 404) {
+      console.error("Error: OpenAI API endpoint not found (404)");
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "OpenAI API endpoint not found (404)" })
+      };
+    }
 
     // Check if the response is OK (status code 200)
     if (!response.ok) {
