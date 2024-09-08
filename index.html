@@ -102,11 +102,52 @@
         </div>
     </div>
 
-    <!-- Script to trigger file upload when Add Book button is clicked -->
+    <!-- Script to trigger file upload, backend processing and list creation -->
     <script>
+        // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
-            document.getElementById('upload-book-image').click();
+            document.getElementById('upload-book-image').click(); // Trigger the file upload dialog
         });
-    </script>
+    
+        // Event listener for handling the selected image and sending it to the backend
+        document.getElementById('upload-book-image').addEventListener('change', function(event) {
+            let selectedImage = event.target.files[0]; // Store the selected image
+            sendToBackend(selectedImage); // Send this image to the backend server for processing
+        });
+    
+        // Function to send the image to the backend server
+        function sendToBackend(imageFile) {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64Image = reader.result.split(',')[1]; // Extract base64 data
+    
+                // Send the base64 image to your backend server
+                fetch('/.netlify/functions/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const parsedText = data.result; // Use result returned from backend
+                    displayDetectedText(parsedText); // Display the parsed book title and author
+                })
+                .catch(error => console.error('Error:', error));
+            };
+    
+            reader.readAsDataURL(imageFile); // Convert image to base64 format
+        }
+    
+        // Function to display the parsed book title and author on the home screen
+        function displayDetectedText(text) {
+            const bookList = document.querySelector('.book-list');
+            const bookCard = `
+                <div class="book-card">
+                    <div class="book-title">${text}</div>
+                </div>
+            `;
+            bookList.innerHTML += bookCard; // Add the parsed result as a new book card
+        }
+    </script>    
 </body>
 </html>
