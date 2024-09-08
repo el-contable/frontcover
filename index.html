@@ -112,7 +112,8 @@
 
         <!-- Hidden file input for image upload -->
         <input type="file" accept="image/*" id="upload-book-image" style="display:none;">
-
+        
+        <div class="progress" id="progress" style="display: none;">Processing...</div>
         <div class="book-list"></div> <!-- Dynamic content added here -->
     </div>
 
@@ -220,12 +221,23 @@
             }
         }
 
-        // Function to send the image to the backend server
+        // Show progress meter
+        function showProgress() {
+            document.getElementById('progress').style.display = 'block';
+        }
+
+        // Hide progress meter
+        function hideProgress() {
+            document.getElementById('progress').style.display = 'none';
+        }
+
+        // Updated sendToBackend function to show and hide progress
         function sendToBackend(imageFile) {
+            showProgress(); // Show progress bar when processing starts
             const reader = new FileReader();
             reader.onloadend = function() {
                 const base64Image = reader.result.split(',')[1]; // Extract base64 data
-    
+
                 // Send the base64 image to your backend server
                 fetch('/.netlify/functions/extract', {
                     method: 'POST',
@@ -236,12 +248,17 @@
                 .then(data => {
                     const parsedText = data.result; // Use result returned from backend
                     displayDetectedText(parsedText); // Display the parsed book title and author
+                    hideProgress(); // Hide progress bar after processing is complete
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    hideProgress(); // Hide progress bar if there's an error
+                });
             };
-    
+
             reader.readAsDataURL(imageFile); // Convert image to base64 format
         }
+
 
         // Load books from localStorage on page load
         window.onload = function() {
