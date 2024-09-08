@@ -1,15 +1,13 @@
-const fetch = require('node-fetch'); // Using require since we're using node-fetch@2
+const sharp = require('sharp');
+const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
   try {
     console.log("Function triggered with event:", event);
 
-    // Log API Key (ensure it's set correctly, remove this for production to avoid exposing it)
-    console.log("Using OpenAI API Key:", process.env.OPENAI_API_KEY);
-
     // Parse the incoming request body to extract the base64 image
     const { image } = JSON.parse(event.body);
-    console.log("Parsed image data:", image);  // Log the base64 image data
+    console.log("Parsed image data:", image);  // Log base64 image data
 
     // Ensure the image is provided
     if (!image) {
@@ -20,14 +18,52 @@ exports.handler = async function(event, context) {
       };
     }
 
-    // Log the start of the OpenAI API request
-    console.log("Sending request to OpenAI...");
+    // Decode the base64 image to a buffer
+    const buffer = Buffer.from(image, 'base64');
 
-    // Make the request to OpenAI API
+    // Use sharp to detect and convert HEIC to JPEG, and compress JPEG images
+    let processedImageBuffer;
+
+    try {
+      const metadata = await sharp(buffer).metadata();
+      console.log("Image metadata:", metadata);
+
+      if (metadata.format === 'heic') {
+        console.log("Converting HEIC image to JPEG...");
+        processedImageBuffer = await sharp(buffer)
+          .jpeg({ quality: 80 }) // Convert to JPEG with compression
+          .toBuffer();
+      } else if (metadata.format === 'jpeg' || metadata.format === 'png') {
+        console.log("Compressing image...");
+        processedImageBuffer = await sharp(buffer)
+          .jpeg({ quality: 75 }) // Compress JPEG with quality setting
+          .toBuffer();
+      } else {
+        console.error("Unsupported image format:", metadata.format);
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Unsupported image format' })
+        };
+      }
+
+      console.log("Image processed successfully");
+
+    } catch (sharpError) {
+      console.error("Error processing image with sharp:", sharpError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Error processing image' })
+      };
+    }
+
+    // Convert the processed buffer back to base64
+    const base64ProcessedImage = processedImageBuffer.toString('base64');
+
+    // Send the base64-encoded processed image to OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Ensure API key is correctly set
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -39,35 +75,21 @@ exports.handler = async function(event, context) {
           },
           {
             role: "user",
-            content: `Here is an image of a book cover in base64 format: "${image}". Please extract the book title and author.`
+            content: `Here is an image of a book cover in base64 format: "${base64ProcessedImage}". Please extract the book title and author.`
           }
         ]
       })
     });
 
-    // Log the raw response status and headers to inspect the API response
-    console.log("Raw Response Status:", response.status);
-    console.log("Raw Response Headers:", response.headers.raw());
-
-    // Check if the response is OK (status code 200)
-    if (!response.ok) {
-      console.error("OpenAI API returned an error:", response.statusText);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: `OpenAI API Error: ${response.statusText}` })
-      };
-    }
-
-    // Log and parse the response body
-    const rawResponseBody = await response.text();  // Get raw response text to inspect if it's JSON or not
+    const rawResponseBody = await response.text();  // Log raw response for debugging
     console.log("Raw Response Body:", rawResponseBody);
 
     // Handle non-JSON responses gracefully
     if (response.headers.get('content-type') && response.headers.get('content-type').includes('application/json')) {
       let data;
       try {
-        data = JSON.parse(rawResponseBody);  // Now safely attempt to parse JSON
-        console.log("Parsed JSON Data:", data);  // Log the parsed JSON data
+        data = JSON.parse(rawResponseBody);
+        console.log("Parsed JSON Data:", data);
       } catch (jsonError) {
         console.error("Error parsing JSON:", jsonError);
         return {
@@ -76,12 +98,10 @@ exports.handler = async function(event, context) {
         };
       }
 
-      // Check if the OpenAI response contains the expected data
       if (data.choices && data.choices[0] && data.choices[0].message) {
         const parsedText = data.choices[0].message.content;
         console.log("Parsed book data:", parsedText);
 
-        // Return the parsed text (book title and author) to the frontend
         return {
           statusCode: 200,
           body: JSON.stringify({ result: parsedText })
@@ -94,16 +114,15 @@ exports.handler = async function(event, context) {
         };
       }
     } else {
-      console.error("Non-JSON Response:", rawResponseBody);  // Handle if response isn't JSON
+      console.error("Non-JSON Response:", rawResponseBody);
       return {
         statusCode: 500,
         body: JSON.stringify({ error: "Received non-JSON response from OpenAI API" })
       };
     }
   } catch (error) {
-    console.error("Error occurred during processing:", error.message || error);  // Log the full error
+    console.error("Error occurred during processing:", error.message || error);
 
-    // Return a 500 status code with detailed error information
     return {
       statusCode: 500,
       body: JSON.stringify({ error: `Something went wrong during processing: ${error.message || error}` })
