@@ -59,7 +59,7 @@
         }
         .book-card {
             position: relative;
-            background-color: #f8f9fa;
+            background-color: #e0e0e0; /* Darker grey */
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
@@ -76,6 +76,23 @@
         }
         .book-author {
             font-size: 14px;
+        }
+        .trash-icon {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease, right 0.3s ease;
+        }
+        .card-moving {
+            background-color: #e0e0e0;
+            transform: translateX(-50%);
+        }
+        .card-moving .trash-icon {
+            opacity: 1;
+            right: 10px;
         }
     </style>
 </head>
@@ -99,10 +116,12 @@
             <div class="book-card">
                 <div class="book-title">The Great Gatsby</div>
                 <div class="book-author">F. Scott Fitzgerald</div>
+                <i class="fas fa-trash-alt trash-icon"></i>
             </div>
             <div class="book-card">
                 <div class="book-title">To Kill a Mockingbird</div>
                 <div class="book-author">Harper Lee</div>
+                <i class="fas fa-trash-alt trash-icon"></i>
             </div>
         </div>
     </div>
@@ -119,13 +138,23 @@
             sendToBackend(selectedImage); // Send this image to the backend server for processing
         });
 
-        // Function to handle swipe to delete
+        // Function to handle swipe to delete with visual feedback
         function addSwipeToDelete(cardElement) {
             let touchstartX = 0;
             let touchendX = 0;
 
             cardElement.addEventListener('touchstart', function(event) {
                 touchstartX = event.changedTouches[0].screenX;
+            });
+
+            cardElement.addEventListener('touchmove', function(event) {
+                const currentX = event.changedTouches[0].screenX;
+                const deltaX = currentX - touchstartX;
+
+                if (deltaX < 0) {  // Only handle left swipe
+                    cardElement.style.transform = `translateX(${deltaX}px)`;
+                    cardElement.classList.add('card-moving');
+                }
             });
 
             cardElement.addEventListener('touchend', function(event) {
@@ -139,10 +168,13 @@
                     setTimeout(() => {
                         cardElement.remove(); // Remove after animation
                     }, 300); // Delay to allow animation
+                } else {
+                    cardElement.style.transform = ''; // Reset position if not swiped far enough
+                    cardElement.classList.remove('card-moving');
                 }
             }
         }
-    
+
         // Function to send the image to the backend server
         function sendToBackend(imageFile) {
             const reader = new FileReader();
@@ -182,6 +214,7 @@
             bookCard.innerHTML = `
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${bookAuthor}</div>
+                <i class="fas fa-trash-alt trash-icon"></i>
             `;
 
             // Add swipe to delete functionality
@@ -189,6 +222,10 @@
     
             bookList.appendChild(bookCard); // Add the new book card to the list
         }
+
+        // Add swipe to delete to all existing cards
+        document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
+
     </script>    
 </body>
 </html>
