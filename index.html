@@ -59,7 +59,7 @@
         }
         .book-card {
             position: relative;
-            background-color: #e0e0e0; /* Darker grey */
+            background-color: #f0f0f0; /* Lightened grey */
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
@@ -87,7 +87,7 @@
             transition: opacity 0.3s ease, right 0.3s ease;
         }
         .card-moving {
-            background-color: #e0e0e0;
+            background-color: #f0f0f0; /* Lightened grey */
             transform: translateX(-50%);
         }
         .card-moving .trash-icon {
@@ -186,6 +186,7 @@
 
             cardElement.addEventListener('touchstart', function(event) {
                 touchstartX = event.changedTouches[0].screenX;
+                cardElement.style.transition = 'transform 0.3s ease'; // Add transition for the individual card
             });
 
             cardElement.addEventListener('touchmove', function(event) {
