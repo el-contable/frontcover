@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = import fetch from 'node-fetch';
 
 exports.handler = async function(event, context) {
   try {
