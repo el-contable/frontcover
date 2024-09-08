@@ -42,9 +42,34 @@ exports.handler = async function(event, context) {
       })
     });
 
-    // Log the response from OpenAI
-    const data = await response.json();
-    console.log("Received response from OpenAI:", data);
+    // Log the raw response status and headers to inspect the API response
+    console.log("Raw Response Status:", response.status);
+    console.log("Raw Response Headers:", response.headers.raw());
+
+    // Check if the response is OK (status code 200)
+    if (!response.ok) {
+      console.error("OpenAI API returned an error:", response.statusText);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({ error: `OpenAI API Error: ${response.statusText}` })
+      };
+    }
+
+    // Log and parse the response body
+    const rawResponseBody = await response.text();  // Use text() first to inspect raw response
+    console.log("Raw Response Body:", rawResponseBody);
+
+    // Try to parse the response as JSON
+    let data;
+    try {
+      data = JSON.parse(rawResponseBody);  // Now safely attempt to parse JSON
+    } catch (jsonError) {
+      console.error("Error parsing JSON:", jsonError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: `Error parsing JSON response: ${jsonError.message}` })
+      };
+    }
 
     // Check if the OpenAI response contains the expected data
     if (data.choices && data.choices[0] && data.choices[0].message) {
@@ -64,12 +89,4 @@ exports.handler = async function(event, context) {
       };
     }
   } catch (error) {
-    console.error("Error occurred during processing:", error.message || error); // Log the full error
-
-    // Return a 500 status code with detailed error information
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: `Something went wrong during processing: ${error.message || error}` })
-    };
-  }
-};
+    console.error("Error occurred during pr
