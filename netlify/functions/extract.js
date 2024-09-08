@@ -31,12 +31,14 @@ exports.handler = async function(event, context) {
       if (metadata.format === 'heic') {
         console.log("Converting HEIC image to JPEG...");
         processedImageBuffer = await sharp(buffer)
-          .jpeg({ quality: 80 }) // Convert to JPEG with compression
+          .resize({ width: 800 }) // Resize the image to a smaller width
+          .jpeg({ quality: 60 }) // Convert to JPEG with compression
           .toBuffer();
       } else if (metadata.format === 'jpeg' || metadata.format === 'png') {
         console.log("Compressing image...");
         processedImageBuffer = await sharp(buffer)
-          .jpeg({ quality: 75 }) // Compress JPEG with quality setting
+          .resize({ width: 800 }) // Resize the image to a smaller width
+          .jpeg({ quality: 60 }) // Compress JPEG with quality setting
           .toBuffer();
       } else {
         console.error("Unsupported image format:", metadata.format);
