@@ -89,4 +89,12 @@ exports.handler = async function(event, context) {
       };
     }
   } catch (error) {
-    console.error("Error occurred during pr
+    console.error("Error occurred during processing:", error.message || error); // Log the full error
+
+    // Return a 500 status code with detailed error information
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: `Something went wrong during processing: ${error.message || error}` })
+    };
+  }
+};
