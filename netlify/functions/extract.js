@@ -100,7 +100,7 @@ exports.handler = async function(event, context) {
           },
           {
             role: "user",
-            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book title and author?`
+            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book title, author, and if possible, return a valid StoryGraph URL?`
           }
         ]
       })
@@ -125,11 +125,18 @@ exports.handler = async function(event, context) {
 
       if (data.choices && data.choices[0] && data.choices[0].message) {
         const parsedText = data.choices[0].message.content;
+        const storyGraphURLMatch = parsedText.match(/https:\/\/app\.thestorygraph\.com\/books\/[^\s]+/);
+        const storyGraphURL = storyGraphURLMatch ? storyGraphURLMatch[0] : null; // Extract StoryGraph URL if available
+        // Pass along title, author, and StoryGraph URL
         console.log("Parsed book data:", parsedText);
 
+        // Return the title, author, and StoryGraph URL to the front-end
         return {
           statusCode: 200,
-          body: JSON.stringify({ result: parsedText })
+          body: JSON.stringify({ 
+              result: parsedText,
+              storyGraphURL: storyGraphURL  // Include the StoryGraph URL
+          })
         };
       } else {
         console.error("Unexpected response format from OpenAI:", data);

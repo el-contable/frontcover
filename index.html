@@ -95,6 +95,23 @@
             opacity: 1;
             right: 10px;
         }
+        .info-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: black;
+            border: 1px solid black;
+            border-radius: 50%;
+            padding: 5px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .info-icon:hover {
+            color: #007BFF;
+        }
     </style>
 </head>
 <body>
@@ -126,11 +143,16 @@
             savedBooks.forEach(book => {
                 const bookCard = document.createElement('div');
                 bookCard.classList.add('book-card');
+
+                // Add the info icon if the StoryGraph URL is present
+                const infoIcon = book.storyGraphURL ? `<a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
+
                 bookCard.innerHTML = `
                     <div class="book-title">${book.title}</div>
                     <div class="book-author">${book.author}</div>
-                    <i class="fas fa-trash-alt trash-icon"></i>
+                    ${infoIcon} <!-- Add info icon if URL exists -->
                 `;
+
                 addSwipeToDelete(bookCard);
                 bookList.appendChild(bookCard);
             });
@@ -159,27 +181,45 @@
         });
 
         // Function to display the parsed book title and author on the home screen
-        function displayDetectedText(text) {
+        function displayDetectedText(text, storyGraphURL) {
             const bookList = document.querySelector('.book-list');
-        
-            const titleMatch = text.match(/"([^"]+)"/); // Extracts title between quotes
-            const authorMatch = text.match(/author is ([^.]+)\./); // Extracts author 
+
+            // Extract title and author from the response
+            const titleMatch = text.match(/"([^"]+)"/); 
+            const authorMatch = text.match(/author is ([^.]+)\./);
 
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
+            // Save the title, author, and StoryGraph URL to localStorage
+            let books = JSON.parse(localStorage.getItem('books')) || [];
+
+            // Check if the book already exists in localStorage
+            const existingBook = books.find(book => book.title === bookTitle);
+
+            // If book doesn't exist, add it with the StoryGraph URL
+            if (!existingBook) {
+                books.push({ title: bookTitle, author: bookAuthor, storyGraphURL });
+                localStorage.setItem('books', JSON.stringify(books));
+            }
+
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
+
+            // Add the info icon only if a StoryGraph URL is available
+            const infoIcon = storyGraphURL ? `<a href="${storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
+
             bookCard.innerHTML = `
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${bookAuthor}</div>
-                <i class="fas fa-trash-alt trash-icon"></i>
+                ${infoIcon}  <!-- Info icon added here if URL exists -->
             `;
 
             addSwipeToDelete(bookCard);
             bookList.appendChild(bookCard);
-            saveBooks(); // Save to localStorage
+            saveBooks();  // Save to localStorage
         }
+
 
         // Function to handle swipe to delete with visual feedback
         function addSwipeToDelete(cardElement) {
