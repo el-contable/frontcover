@@ -385,14 +385,20 @@
                 }, 2750);  // After showing the swipe for a brief moment
             }
         }
-
         // Load books from localStorage on page load
         window.onload = function() {
             loadBooks();  // Load saved books
+
+            const bookCards = document.querySelectorAll('.book-card-wrapper');
+            if (!swipeSimulationRun && bookCards.length === 1) {
+                simulateSwipe();  // Simulate swipe if only one book card is present
+                swipeSimulationRun = true; // Prevent multiple simulations
+            }
+
             // Add swipe to delete to all existing cards
-            document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
-            simulateSwipe();  // Simulate swipe after loading the books
+            bookCards.forEach(addSwipeToDelete);
         };
+
     </script>    
 </body>
 </html>
