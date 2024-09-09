@@ -58,18 +58,6 @@
         .book-list {
             margin-top: 30px;
         }
-        .book-card {
-            position: relative;
-            background-color: #f0f0f0; /* Lightened grey */
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-        .swiped {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
         .book-title {
             font-size: 18px;
             font-weight: bold;
@@ -78,39 +66,46 @@
         .book-author {
             font-size: 14px;
         }
-        .trash-icon {
+        .card-moving {
+            background-color: #f0f0f0; /* Lightened grey */
+            transform: translateX(-50%);
+        }
+        .info-icon:hover {
+            color: #007BFF;
+        }
+        .book-card {
+            position: relative;
+            background-color: #f0f0f0; /* Lightened grey */
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .trash-icon, .info-icon {
             position: absolute;
-            right: -50px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 24px;
             opacity: 0;
             transition: opacity 0.3s ease, right 0.3s ease;
         }
-        .card-moving {
-            background-color: #f0f0f0; /* Lightened grey */
-            transform: translateX(-50%);
-        }
-        .card-moving .trash-icon {
-            opacity: 1;
-            right: 10px;
-        }
-        .info-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 16px;
-            color: black;
-            border: 1px solid black;
-            border-radius: 50%;
-            padding: 5px;
-            cursor: pointer;
-            transition: color 0.3s ease;
+
+        .trash-icon {
+            right: 50px; /* Ensure trash icon is visible on swipe */
         }
 
-        .info-icon:hover {
-            color: #007BFF;
+        .info-icon {
+            right: 10px; /* Align the info icon to the far right */
+        }
+
+        .card-moving .trash-icon, .card-moving .info-icon {
+            opacity: 1;
+        }
+
+        .swiped {
+            transform: translateX(-100%);
+            opacity: 0;
         }
     </style>
 </head>
@@ -191,36 +186,29 @@
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
-            // Save the title, author, and StoryGraph URL to localStorage
-            let books = JSON.parse(localStorage.getItem('books')) || [];
+            // If StoryGraph URL is not found, create a search URL as a fallback
+            const fallbackStoryGraphURL = `https://app.thestorygraph.com/search?search_term=${encodeURIComponent(bookTitle)}`;
 
-            // Check if the book already exists in localStorage
-            const existingBook = books.find(book => book.title === bookTitle);
-
-            // If book doesn't exist, add it with the StoryGraph URL
-            if (!existingBook) {
-                books.push({ title: bookTitle, author: bookAuthor, storyGraphURL });
-                localStorage.setItem('books', JSON.stringify(books));
-            }
+            // Use StoryGraph URL if found, otherwise fallback to search URL
+            const finalStoryGraphURL = storyGraphURL || fallbackStoryGraphURL;
 
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
 
-            // Add the info icon only if a StoryGraph URL is available
-            const infoIcon = storyGraphURL ? `<a href="${storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
+            // Adding both icons to the card
+            const infoIcon = `<a href="${finalStoryGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>`;
+            const trashIcon = `<i class="fas fa-trash-alt trash-icon"></i>`;
 
             bookCard.innerHTML = `
                 <div class="book-title">${bookTitle}</div>
                 <div class="book-author">${bookAuthor}</div>
-                ${infoIcon}  <!-- Info icon added here if URL exists -->
+                ${trashIcon}  <!-- Trash icon for deletion -->
+                ${infoIcon}   <!-- Info icon for StoryGraph link -->
             `;
-
             addSwipeToDelete(bookCard);
             bookList.appendChild(bookCard);
             saveBooks();  // Save to localStorage
         }
-
-
         // Function to handle swipe to delete with visual feedback
         function addSwipeToDelete(cardElement) {
             let touchstartX = 0;
