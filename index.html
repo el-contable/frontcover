@@ -62,6 +62,8 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 5px;
+            display: flex; /* Ensures the info icon aligns with the title */
+            align-items: center;
         }
         .book-author {
             font-size: 14px;
@@ -70,8 +72,13 @@
             background-color: #f0f0f0; /* Lightened grey */
             transform: translateX(-50%);
         }
-        .info-icon:hover {
+        .info-icon {
+            font-size: 18px;
+            margin-left: 10px; /* Adds space between title and info icon */
             color: #007BFF;
+        }
+        .info-icon:hover {
+            color: #0056b3;
         }
         .book-card {
             position: relative;
@@ -82,24 +89,17 @@
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        .trash-icon, .info-icon {
+        .trash-icon {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             font-size: 24px;
             opacity: 0;
             transition: opacity 0.3s ease, right 0.3s ease;
-        }
-
-        .trash-icon {
             right: 50px; /* Ensure trash icon is visible on swipe */
         }
 
-        .info-icon {
-            right: 10px; /* Align the info icon to the far right */
-        }
-
-        .card-moving .trash-icon, .card-moving .info-icon {
+        .card-moving .trash-icon {
             opacity: 1;
         }
 
@@ -176,35 +176,29 @@
         });
 
         // Function to display the parsed book title and author on the home screen
-        function displayDetectedText(text, storyGraphURL) {
+        function displayDetectedTextWithISBN(text, isbn) {
             const bookList = document.querySelector('.book-list');
-
-            // Extract title and author from the response
-            const titleMatch = text.match(/"([^"]+)"/); 
-            const authorMatch = text.match(/author is ([^.]+)\./);
-
+            
+            const titleMatch = text.match(/"([^"]+)"/);  // Extract title between quotes
+            const authorMatch = text.match(/author is ([^.]+)\./);  // Extract author
+            
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
-
-            // If StoryGraph URL is not found, create a search URL as a fallback
-            const fallbackStoryGraphURL = `https://app.thestorygraph.com/search?search_term=${encodeURIComponent(bookTitle)}`;
-
-            // Use StoryGraph URL if found, otherwise fallback to search URL
-            const finalStoryGraphURL = storyGraphURL || fallbackStoryGraphURL;
-
+            
+            // Create book card
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
-
-            // Adding both icons to the card
-            const infoIcon = `<a href="${finalStoryGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>`;
-            const trashIcon = `<i class="fas fa-trash-alt trash-icon"></i>`;
-
+            
+            // Check if ISBN-13 is available for StoryGraph link
+            const infoLink = isbn ? `https://app.thestorygraph.com/search?search_term=${isbn}` : '#';
+            const infoIcon = isbn ? `<a href="${infoLink}" target="_blank"><i class="fas fa-info-circle info-icon"></i></a>` : '';
+            
             bookCard.innerHTML = `
-                <div class="book-title">${bookTitle}</div>
+                <div class="book-title">${bookTitle}${infoIcon}</div>
                 <div class="book-author">${bookAuthor}</div>
-                ${trashIcon}  <!-- Trash icon for deletion -->
-                ${infoIcon}   <!-- Info icon for StoryGraph link -->
+                <i class="fas fa-trash-alt trash-icon"></i>
             `;
+
             addSwipeToDelete(bookCard);
             bookList.appendChild(bookCard);
             saveBooks();  // Save to localStorage
@@ -274,8 +268,11 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    const parsedText = data.result; // Use result returned from backend
-                    displayDetectedText(parsedText); // Display the parsed book title and author
+                    const parsedText = data.result;  // Extract text and ISBN from GPT response
+                    const isbn13Match = parsedText.match(/ISBN-13: (\d{13})/);  // Find ISBN-13 in the response
+                    const isbn13 = isbn13Match ? isbn13Match[1] : null;
+
+                    displayDetectedTextWithISBN(parsedText, isbn13);  // Pass ISBN-13 to the function
                     hideProgress(); // Hide progress bar after processing is complete
                 })
                 .catch(error => {
@@ -286,6 +283,7 @@
 
             reader.readAsDataURL(imageFile); // Convert image to base64 format
         }
+
 
 
         // Load books from localStorage on page load

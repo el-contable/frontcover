@@ -100,7 +100,7 @@ exports.handler = async function(event, context) {
           },
           {
             role: "user",
-            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book title and author from the text?`
+            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book's title, author, and corresponding ISBN-13?`
           }
         ]
       })
