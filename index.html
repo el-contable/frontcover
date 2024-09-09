@@ -58,50 +58,6 @@
         .book-list {
             margin-top: 30px;
         }
-        .book-card-wrapper {
-            position: relative;
-            margin-bottom: 15px;
-            background-color: #fff;
-            border-radius: 5px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-        }
-        .book-card {
-            background-color: #f0f0f0;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 0;
-            width: 100%;
-            transition: transform 0.3s ease;
-        }
-
-        .delete-background {
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 100px;
-            background-color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .delete-background i {
-            font-size: 24px;
-            color: red;
-            border: 2px solid red;
-            padding: 10px;
-            border-radius: 50%;
-        }
-        .card-moving {
-            transform: translateX(-50%); /* Modify based on swipe distance */
-        }
-
-        .swiped {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
         .book-title {
             font-size: 18px;
             font-weight: bold;
@@ -112,6 +68,10 @@
         .book-author {
             font-size: 14px;
         }
+        .card-moving {
+            background-color: #f0f0f0; /* Lightened grey */
+            transform: translateX(-50%);
+        }
         .info-icon {
             font-size: 18px;
             margin-left: 10px; /* Adds space between title and info icon */
@@ -120,6 +80,35 @@
         .info-icon:hover {
             color: #0056b3;
         }
+        .book-card {
+            position: relative;
+            background-color: #f0f0f0; /* Lightened grey */
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .trash-icon {
+            position: absolute;
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease, right 0.3s ease;
+        }
+
+        .card-moving .trash-icon {
+            opacity: 1;
+            right: 10px;  /* Adjust position during the swipe */
+        }
+
+        .swiped .trash-icon {
+            opacity: 1;  /* Ensure trash icon is visible after swipe */
+            right: 10px;  /* Ensure it's in the correct position */
+        }
+
     </style>
 </head>
 <body>
@@ -134,29 +123,14 @@
         <button class="add-book-btn">
             <i class="fas fa-plus"></i> Add Book
         </button>
-    
+
         <!-- Hidden file input for image upload -->
         <input type="file" accept="image/*" id="upload-book-image" style="display:none;">
-    
+        
         <div class="progress" id="progress" style="display: none;">Processing...</div>
-    
-        <div class="book-list">
-            <!-- Each book card with the new wrapper structure -->
-            <div class="book-card-wrapper">
-                <div class="delete-background">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
-                <div class="book-card">
-                    <div class="book-title">
-                        Book Title
-                    </div>
-                    <div class="book-author">
-                        Book Author
-                    </div>
-                </div>
-            </div>
-        </div> <!-- book-list -->
-    </div> <!-- container -->
+        <div class="book-list"></div> <!-- Dynamic content added here -->
+    </div>
+
     <script>
         let swipeSimulationRun = false; // Ensure the simulation runs only once
 
@@ -166,8 +140,8 @@
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
             savedBooks.forEach(book => {
-                const bookCardWrapper = document.createElement('div');
-                bookCardWrapper.classList.add('book-card-wrapper');
+                const bookCard = document.createElement('div');
+                bookCard.classList.add('book-card');
 
                 // Log the StoryGraph URL being retrieved for debugging
                 console.log(book.storyGraphURL);
@@ -175,34 +149,29 @@
                 // Add the info icon if the StoryGraph URL is present
                 const infoIcon = book.storyGraphURL ? `<a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
 
-                // Create the book card and trash icon within the wrapper
-                bookCardWrapper.innerHTML = `
-                    <div class="delete-background">
-                        <i class="fas fa-trash-alt"></i>
+                // Updated to correctly display title, author, info icon (if available), and trash icon
+                bookCard.innerHTML = `
+                    <div class="book-title">
+                        ${book.title}
+                        ${infoIcon}
                     </div>
-                    <div class="book-card">
-                        <div class="book-title">
-                            ${book.title}
-                            ${infoIcon}
-                        </div>
-                        <div class="book-author">${book.author}</div>
-                    </div>
+                    <div class="book-author">${book.author}</div>
+                    <i class="fas fa-trash-alt trash-icon"></i> <!-- Trash icon added here -->
                 `;
 
-                addSwipeToDelete(bookCardWrapper);  // Add swipe functionality to the wrapper
-                bookList.appendChild(bookCardWrapper);  // Add the wrapper to the list
+                addSwipeToDelete(bookCard); // Re-apply swipe functionality to each bookCard
+                bookList.appendChild(bookCard); // Append to the book list
             });
         }
-
         // Function to save books to localStorage
         function saveBooks() {
             const books = [];
-            document.querySelectorAll('.book-card-wrapper').forEach(wrapper => {
-                const titleElement = wrapper.querySelector('.book-title');
-                const author = wrapper.querySelector('.book-author').innerText;
+            document.querySelectorAll('.book-card').forEach(card => {
+                const titleElement = card.querySelector('.book-title');
+                const author = card.querySelector('.book-author').innerText;
                 const infoIcon = titleElement.querySelector('.info-icon');
-                const storyGraphURL = infoIcon ? infoIcon.href : null;  // Get the StoryGraph URL if present
-                const title = titleElement.childNodes[0].textContent.trim();  // Extract title text separately from icon
+                const storyGraphURL = infoIcon ? infoIcon.href : null; // Get the StoryGraph URL if present
+                const title = titleElement.childNodes[0].textContent.trim(); // Extract title text separately from icon
 
                 console.log({ title, author, storyGraphURL }); // Log the values
 
@@ -210,7 +179,6 @@
             });
             localStorage.setItem('books', JSON.stringify(books));
         }
-
 
         // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
@@ -257,12 +225,10 @@
         function addSwipeToDelete(cardElement) {
             let touchstartX = 0;
             let touchendX = 0;
-            const bookCard = cardElement.querySelector('.book-card');
-            const deleteBackground = cardElement.querySelector('.delete-background');
 
             cardElement.addEventListener('touchstart', function(event) {
                 touchstartX = event.changedTouches[0].screenX;
-                bookCard.style.transition = 'transform 0.3s ease';  // Smooth animation for the swipe
+                cardElement.style.transition = 'transform 0.3s ease'; // Add transition for the individual card
             });
 
             cardElement.addEventListener('touchmove', function(event) {
@@ -270,59 +236,52 @@
                 const currentX = event.changedTouches[0].screenX;
                 const deltaX = currentX - touchstartX;
 
-                if (deltaX < 0) {  // Handle left swipe only
-                    bookCard.style.transform = `translateX(${deltaX}px)`;  // Swipe the book card
-                    deleteBackground.style.opacity = '1';  // Reveal the trash icon background
+                if (deltaX < 0) {  // Only handle left swipe
+                    cardElement.style.transform = `translateX(${deltaX}px)`;
+                    cardElement.classList.add('card-moving');
                 }
             });
 
             cardElement.addEventListener('touchend', function(event) {
                 touchendX = event.changedTouches[0].screenX;
-                handleSwipe(cardElement, bookCard, deleteBackground);
+                handleSwipe(cardElement);
             });
 
-            function handleSwipe(cardElement, bookCard, deleteBackground) {
-                if (touchendX < touchstartX - 150) {  // Swipe threshold for deletion
-                    bookCard.style.transform = 'translateX(-100%)';  // Fully swipe off the card
+            function handleSwipe(cardElement) {
+                if (touchendX < touchstartX - 150) {  // Swipe left threshold
+                    cardElement.classList.add('swiped'); // Add swipe animation class
                     setTimeout(() => {
-                        cardElement.remove();  // Remove after animation
-                        saveBooks();  // Save updated list to localStorage
-                    }, 300);  // Delay for swipe animation
+                        cardElement.remove(); // Remove after animation
+                        saveBooks(); // Save updated list to localStorage
+                    }, 300); // Delay to allow animation
                 } else {
-                    bookCard.style.transform = '';  // Reset position if not swiped far enough
-                    deleteBackground.style.opacity = '0';  // Hide trash background
+                    cardElement.style.transform = ''; // Reset position if not swiped far enough
+                    cardElement.classList.remove('card-moving');
                 }
             }
         }
         function addBook(bookTitle, bookAuthor) {
             const bookList = document.querySelector('.book-list');
-
-            // Create the wrapper and book card
-            const bookCardWrapper = document.createElement('div');
-            bookCardWrapper.classList.add('book-card-wrapper');
-
-            bookCardWrapper.innerHTML = `
-                <div class="delete-background">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
-                <div class="book-card">
-                    <div class="book-title">${bookTitle}</div>
-                    <div class="book-author">${bookAuthor}</div>
-                </div>
+            
+            const bookCard = document.createElement('div');
+            bookCard.classList.add('book-card');
+            bookCard.innerHTML = `
+                <div class="book-title">${bookTitle}</div>
+                <div class="book-author">${bookAuthor}</div>
+                <i class="fas fa-trash-alt trash-icon"></i>
             `;
 
-            addSwipeToDelete(bookCardWrapper);  // Add swipe functionality to the wrapper
-            bookList.appendChild(bookCardWrapper);  // Add the wrapper to the list
+            addSwipeToDelete(bookCard);
+            bookList.appendChild(bookCard);
 
             saveBooks(); // Save to localStorage
 
             // Trigger swipe simulation if it's the first bookCard
-            if (!swipeSimulationRun && document.querySelectorAll('.book-card-wrapper').length === 1) {
+            if (!swipeSimulationRun && document.querySelectorAll('.book-card').length === 1) {
                 simulateSwipe();
                 swipeSimulationRun = true; // Prevent the swipe simulation from running multiple times
             }
         }
-
         // Show progress meter
         function showProgress() {
             document.getElementById('progress').style.display = 'block';
@@ -365,40 +324,38 @@
 
         // Function to simulate swipe for demonstration purposes
         function simulateSwipe() {
-            const bookCardWrapper = document.querySelector('.book-card-wrapper');  // Select the first book-card-wrapper
-            if (bookCardWrapper) {  // Only simulate if a book card is present
-                const bookCard = bookCardWrapper.querySelector('.book-card');  // Get the book card within the wrapper
-                const trashIcon = bookCardWrapper.querySelector('.delete-background i');  // Get the trash icon
+            const bookCard = document.querySelector('.book-card');  // Select the first book card
+            const trashIcon = bookCard?.querySelector('.trash-icon');  // Get the trash icon within the card
 
+            if (bookCard) {
                 bookCard.style.transition = 'transform 0.3s ease';  // Set up transition for smooth animation
 
                 // Simulate swipe to left
                 setTimeout(() => {
                     bookCard.style.transform = 'translateX(-50px)';  // Slight swipe left
-                    trashIcon.style.opacity = '1';  // Show the trash icon during swipe
+                    if (trashIcon) {
+                        trashIcon.style.opacity = '1';  // Make the trash icon visible during swipe
+                        trashIcon.style.right = '10px';  // Adjust the position of the trash icon
+                    }
                 }, 2000);  // Delay 2 seconds after page load
 
                 // Bring the card back to its original position
                 setTimeout(() => {
                     bookCard.style.transform = '';  // Reset transform to original position
-                    trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
+                    if (trashIcon) {
+                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
+                        trashIcon.style.right = '50px';  // Reset the position of the trash icon
+                    }
                 }, 2750);  // After showing the swipe for a brief moment
             }
         }
         // Load books from localStorage on page load
         window.onload = function() {
             loadBooks();  // Load saved books
-
-            const bookCards = document.querySelectorAll('.book-card-wrapper');
-            if (!swipeSimulationRun && bookCards.length === 1) {
-                simulateSwipe();  // Simulate swipe if only one book card is present
-                swipeSimulationRun = true; // Prevent multiple simulations
-            }
-
             // Add swipe to delete to all existing cards
-            bookCards.forEach(addSwipeToDelete);
+            document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
+            simulateSwipe();  // Simulate swipe after loading the books
         };
-
     </script>    
 </body>
 </html>
