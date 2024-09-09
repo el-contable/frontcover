@@ -143,25 +143,26 @@
                 const bookCard = document.createElement('div');
                 bookCard.classList.add('book-card');
 
-                console.log(book.storyGraphURL); // Log the StoryGraph URL being retrieved
+                // Log the StoryGraph URL being retrieved for debugging
+                console.log(book.storyGraphURL);
 
                 // Add the info icon if the StoryGraph URL is present
                 const infoIcon = book.storyGraphURL ? `<a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
 
-                // Updated to correctly display title, author, and info icon (if available)
+                // Updated to correctly display title, author, info icon (if available), and trash icon
                 bookCard.innerHTML = `
                     <div class="book-title">
                         ${book.title}
                         ${infoIcon}
                     </div>
                     <div class="book-author">${book.author}</div>
+                    <i class="fas fa-trash-alt trash-icon"></i> <!-- Trash icon added here -->
                 `;
 
-                addSwipeToDelete(bookCard);
-                bookList.appendChild(bookCard);
+                addSwipeToDelete(bookCard); // Re-apply swipe functionality to each bookCard
+                bookList.appendChild(bookCard); // Append to the book list
             });
         }
-
         // Function to save books to localStorage
         function saveBooks() {
             const books = [];
@@ -350,12 +351,11 @@
         }
         // Load books from localStorage on page load
         window.onload = function() {
-            loadBooks();
-            simulateSwipe();
+            loadBooks();  // Load saved books
+            // Add swipe to delete to all existing cards
+            document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
+            simulateSwipe();  // Simulate swipe after loading the books
         };
-        // Add swipe to delete to all existing cards
-        document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
-
     </script>    
 </body>
 </html>
