@@ -100,7 +100,7 @@ exports.handler = async function(event, context) {
           },
           {
             role: "user",
-            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book's title, author, and corresponding ISBN-13?`
+            content: `Here is the extracted text from a book cover: "${extractedText}". Can you identify the book's title and author?`
           }
         ]
       })
@@ -125,8 +125,8 @@ exports.handler = async function(event, context) {
 
       if (data.choices && data.choices[0] && data.choices[0].message) {
         const parsedText = data.choices[0].message.content;
-        const storyGraphURLMatch = parsedText.match(/https:\/\/app\.thestorygraph\.com\/books\/[^\s]+/);
-        const storyGraphURL = storyGraphURLMatch ? storyGraphURLMatch[0] : null; // Extract StoryGraph URL if available
+        const storyGraphURLMatch = parsedText.match(/https:\/\/app\.thestorygraph\.com\/books\/[^\s]+/); // Check for StoryGraph URL in GPT response
+        const storyGraphURL = storyGraphURLMatch ? storyGraphURLMatch[0] : null; // If found, store it
         // Pass along title, author, and StoryGraph URL
         console.log("Parsed book data:", parsedText);
 

@@ -176,33 +176,35 @@
         });
 
         // Function to display the parsed book title and author on the home screen
-        function displayDetectedTextWithISBN(text, isbn) {
+        function displayDetectedText(text, storyGraphURL) {
             const bookList = document.querySelector('.book-list');
-            
-            const titleMatch = text.match(/"([^"]+)"/);  // Extract title between quotes
-            const authorMatch = text.match(/author is ([^.]+)\./);  // Extract author
-            
+
+            // Extract title and author from the response
+            const titleMatch = text.match(/"([^"]+)"/); 
+            const authorMatch = text.match(/author is ([^.]+)\./);
+
             const bookTitle = titleMatch ? titleMatch[1] : "Unknown Title";
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
-            
-            // Create book card
+
+            // Fallback to search URL if no specific StoryGraph URL is found
+            const fallbackStoryGraphURL = `https://app.thestorygraph.com/search?search_term=${encodeURIComponent(bookTitle)}`;
+            const finalStoryGraphURL = storyGraphURL || fallbackStoryGraphURL;
+
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
-            
-            // Check if ISBN-13 is available for StoryGraph link
-            const infoLink = isbn ? `https://app.thestorygraph.com/search?search_term=${isbn}` : '#';
-            const infoIcon = isbn ? `<a href="${infoLink}" target="_blank"><i class="fas fa-info-circle info-icon"></i></a>` : '';
-            
             bookCard.innerHTML = `
-                <div class="book-title">${bookTitle}${infoIcon}</div>
+                <div class="book-title">
+                    ${bookTitle}
+                    <a href="${finalStoryGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>
+                </div>
                 <div class="book-author">${bookAuthor}</div>
                 <i class="fas fa-trash-alt trash-icon"></i>
             `;
-
             addSwipeToDelete(bookCard);
             bookList.appendChild(bookCard);
             saveBooks();  // Save to localStorage
         }
+
         // Function to handle swipe to delete with visual feedback
         function addSwipeToDelete(cardElement) {
             let touchstartX = 0;
@@ -268,11 +270,10 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    const parsedText = data.result;  // Extract text and ISBN from GPT response
-                    const isbn13Match = parsedText.match(/ISBN-13: (\d{13})/);  // Find ISBN-13 in the response
-                    const isbn13 = isbn13Match ? isbn13Match[1] : null;
+                    const parsedText = data.result;  // Extract text from GPT response
+                    const storyGraphURL = data.storyGraphURL;  // Get StoryGraph URL
 
-                    displayDetectedTextWithISBN(parsedText, isbn13);  // Pass ISBN-13 to the function
+                    displayDetectedText(parsedText, storyGraphURL);  // Pass the text and StoryGraph URL
                     hideProgress(); // Hide progress bar after processing is complete
                 })
                 .catch(error => {
