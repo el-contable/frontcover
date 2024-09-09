@@ -179,7 +179,7 @@
                 
                 // Add book title and author
                 doc.text(`${index + 1}. ${book.title}`, 20, yPosition);  // Book Title
-                doc.text(`${book.author}`, 30, yPosition + 8);  // Author indented below the title
+                doc.text(`${book.author}`, 20, yPosition + 8);  // Author indented below the title
                 yPosition += lineHeight;  // Move yPosition for the next entry
             });
 
