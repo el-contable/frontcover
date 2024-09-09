@@ -182,8 +182,10 @@
                 doc.text(`${book.author}`, 30, yPosition + 8);  // Author indented below the title
             });
 
-            // Save the PDF
-            doc.save('Front_Cover_Book_List.pdf');
+            // Convert the PDF to a blob and open it in a new tab
+            const pdfBlob = doc.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            window.open(url, '_blank');  // Open the PDF in a new tab
         });
     </script>
 </body>
