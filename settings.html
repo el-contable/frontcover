@@ -124,23 +124,24 @@
             </button>
         </div>        
         <div class="settings-item">
-            <button class="export-btn">
+            <button class="export-btn" id="export-to-pdf"> 
                 <i class="fas fa-file-export"></i> Export Book List
             </button>
         </div>
     </div>
     <!-- JavaScript for Copy to Clipboard functionality -->
     <script>
+        // Copy to Clipboard functionality
         document.getElementById('copy-to-clipboard').addEventListener('click', function() {
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
-            const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n');
+            const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n\n');  // Format with extra space between entries
 
             // Copy text to clipboard
             navigator.clipboard.writeText(bookListText).then(() => {
                 const copyButton = document.getElementById('copy-to-clipboard');
                 copyButton.innerHTML = '<i class="fas fa-check"></i> Copied';  // Change text to "Copied"
                 copyButton.style.backgroundColor = '#28a745';  // Change background to green
-                
+
                 // Revert the button text and background color after 3 seconds
                 setTimeout(() => {
                     copyButton.innerHTML = '<i class="fas fa-clipboard"></i> Copy to Clipboard';  // Revert text
@@ -150,7 +151,9 @@
                 console.error('Error copying to clipboard: ', err);
             });
         });
-        document.querySelector('.export-btn').addEventListener('click', function() {
+
+        // Export Book List functionality
+        document.querySelector('#export-to-pdf').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -167,20 +170,16 @@
             doc.setFontSize(16);
             doc.text("Book List", 105, 30, { align: "center" });
 
-            // Table Headers
-            doc.setFontSize(14);
-            doc.text("No.", 20, 50);
-            doc.text("Book Title", 40, 50);
-            doc.text("Author", 140, 50);
-
-            // Fetch books from localStorage and create table content
+            // Fetch books from localStorage
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
+            // Format each book entry as a numbered list with title and author on separate lines
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(14);
             savedBooks.forEach((book, index) => {
-                const yPosition = 60 + index * 10;  // Adjust the vertical spacing
-                doc.text(`${index + 1}.`, 20, yPosition);  // Number
-                doc.text(book.title, 40, yPosition);  // Book Title
-                doc.text(book.author, 140, yPosition);  // Author
+                const yPosition = 50 + index * 20;  // Adjust vertical spacing for better readability
+                doc.text(`${index + 1}. ${book.title}`, 20, yPosition);  // Book Title
+                doc.text(`${book.author}`, 30, yPosition + 8);  // Author indented below the title
             });
 
             // Save the PDF
