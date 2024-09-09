@@ -187,7 +187,7 @@
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
             // Fallback to search URL if no specific StoryGraph URL is found
-            const fallbackStoryGraphURL = `https://app.thestorygraph.com/search?search_term=${encodeURIComponent(bookTitle)}`;
+            const fallbackStoryGraphURL = `https://app.thestorygraph.com/browse?search_term=${encodeURIComponent(bookTitle)}`;
             const finalStoryGraphURL = storyGraphURL || fallbackStoryGraphURL;
 
             const bookCard = document.createElement('div');
