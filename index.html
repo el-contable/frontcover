@@ -296,13 +296,29 @@
             reader.readAsDataURL(imageFile); // Convert image to base64 format
         }
 
+        // Function to simulate swipe for demonstration purposes
+        function simulateSwipe() {
+            const bookCard = document.querySelector('.book-card');  // Select the first book card
+            if (bookCard) {
+                bookCard.style.transition = 'transform 0.3s ease';  // Set up transition for smooth animation
 
+                // Simulate swipe to left
+                setTimeout(() => {
+                    bookCard.style.transform = 'translateX(-50px)';  // Slight swipe left
+                }, 2000);  // Delay 2 seconds after page load
+
+                // Bring the card back to its original position
+                setTimeout(() => {
+                    bookCard.style.transform = '';  // Reset transform to original position
+                }, 2750);  // After showing the swipe for a brief moment
+            }
+        }
 
         // Load books from localStorage on page load
         window.onload = function() {
             loadBooks();
+            simulateSwipe();
         };
-
         // Add swipe to delete to all existing cards
         document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
 
