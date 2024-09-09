@@ -182,8 +182,10 @@
                 yPosition += lineHeight;  // Move yPosition for the next entry
             });
 
-            // Save the PDF and open it in a new tab
-            doc.save('Front_Cover_Book_List.pdf');
+            // Create a Blob from the PDF and open in a new tab
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl);  // Opens the PDF in a new tab
         });
     </script>
 </body>
