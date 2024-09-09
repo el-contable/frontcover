@@ -139,31 +139,42 @@
                 const bookCard = document.createElement('div');
                 bookCard.classList.add('book-card');
 
+                console.log(book.storyGraphURL); // Log the StoryGraph URL being retrieved
+
                 // Add the info icon if the StoryGraph URL is present
                 const infoIcon = book.storyGraphURL ? `<a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
 
+                // Updated to correctly display title, author, and info icon (if available)
                 bookCard.innerHTML = `
-                    <div class="book-title">${book.title}</div>
+                    <div class="book-title">
+                        ${book.title}
+                        ${infoIcon}
+                    </div>
                     <div class="book-author">${book.author}</div>
-                    ${infoIcon} <!-- Add info icon if URL exists -->
                 `;
 
                 addSwipeToDelete(bookCard);
                 bookList.appendChild(bookCard);
             });
         }
+
         // Function to save books to localStorage
         function saveBooks() {
             const books = [];
             document.querySelectorAll('.book-card').forEach(card => {
-                const title = card.querySelector('.book-title').innerText;
+                const titleElement = card.querySelector('.book-title');
                 const author = card.querySelector('.book-author').innerText;
-                const infoIcon = card.querySelector('.info-icon');
+                const infoIcon = titleElement.querySelector('.info-icon');
                 const storyGraphURL = infoIcon ? infoIcon.href : null; // Get the StoryGraph URL if present
+                const title = titleElement.childNodes[0].textContent.trim(); // Extract title text separately from icon
+
+                console.log({ title, author, storyGraphURL }); // Log the values
+
                 books.push({ title, author, storyGraphURL });
             });
             localStorage.setItem('books', JSON.stringify(books));
         }
+
         // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
             document.getElementById('upload-book-image').click(); // Trigger the file upload dialog
@@ -187,7 +198,7 @@
             const bookAuthor = authorMatch ? authorMatch[1] : "Unknown Author";
 
             // Fallback to search URL if no specific StoryGraph URL is found
-            const fallbackStoryGraphURL = `https://app.thestorygraph.com/browse?search_term=${encodeURIComponent(bookTitle)}`;
+            const fallbackStoryGraphURL = `https://app.thestorygraph.com/browse?search_term=${encodeURIComponent(bookTitle + " " + bookAuthor)}`;
             const finalStoryGraphURL = storyGraphURL || fallbackStoryGraphURL;
 
             const bookCard = document.createElement('div');
