@@ -153,39 +153,38 @@
         });
 
         // Export Book List functionality
-        document.querySelector('#export-to-pdf').addEventListener('click', function() {
+        document.querySelector('.export-btn').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
-            // Page Border
-            doc.setLineWidth(0.5);
-            doc.rect(10, 10, 190, 277); // x, y, width, height (border)
-
-            // Title
+            const pageHeight = doc.internal.pageSize.height;  // Get page height in pts
+            let yPosition = 50;  // Initial y position to start writing content
+            const lineHeight = 20;  // Height between lines
+            
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(22);
-            doc.text("Front Cover", 105, 20, { align: "center" });
-
-            // Subtitle
-            doc.setFontSize(16);
-            doc.text("Book List", 105, 30, { align: "center" });
+            doc.text("Front Cover - Book List", 20, 20);  // Title at the top
 
             // Fetch books from localStorage
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
-            // Format each book entry as a numbered list with title and author on separate lines
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(14);
+
             savedBooks.forEach((book, index) => {
-                const yPosition = 50 + index * 20;  // Adjust vertical spacing for better readability
+                // Check if adding another entry would go past the bottom of the page
+                if (yPosition > pageHeight - 40) {
+                    doc.addPage();  // Add new page
+                    yPosition = 50;  // Reset yPosition for new page
+                }
+                
+                // Add book title and author
                 doc.text(`${index + 1}. ${book.title}`, 20, yPosition);  // Book Title
                 doc.text(`${book.author}`, 30, yPosition + 8);  // Author indented below the title
+                yPosition += lineHeight;  // Move yPosition for the next entry
             });
 
-            // Convert the PDF to a blob and open it in a new tab
-            const pdfBlob = doc.output('blob');
-            const url = URL.createObjectURL(pdfBlob);
-            window.open(url, '_blank');  // Open the PDF in a new tab
+            // Save the PDF and open it in a new tab
+            doc.save('Front_Cover_Book_List.pdf');
         });
     </script>
 </body>
