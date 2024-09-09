@@ -6,6 +6,10 @@
     <title>Settings - Book Tracker PWA</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    
+    <!-- Add the jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -115,17 +119,73 @@
             </a>
         </div>
         <div class="settings-item">
-            <span class="settings-label">Sync with Apple Notes</span>
-            <label class="toggle-switch">
-                <input type="checkbox">
-                <span class="slider"></span>
-            </label>
-        </div>
+            <button class="export-btn" id="copy-to-clipboard">
+                <i class="fas fa-clipboard"></i> Copy to Clipboard
+            </button>
+        </div>        
         <div class="settings-item">
             <button class="export-btn">
                 <i class="fas fa-file-export"></i> Export Book List
             </button>
         </div>
     </div>
+    <!-- JavaScript for Copy to Clipboard functionality -->
+    <script>
+        document.getElementById('copy-to-clipboard').addEventListener('click', function() {
+            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+            const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n');
+
+            // Copy text to clipboard
+            navigator.clipboard.writeText(bookListText).then(() => {
+                const copyButton = document.getElementById('copy-to-clipboard');
+                copyButton.innerHTML = '<i class="fas fa-check"></i> Copied';  // Change text to "Copied"
+                copyButton.style.backgroundColor = '#28a745';  // Change background to green
+                
+                // Revert the button text and background color after 3 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = '<i class="fas fa-clipboard"></i> Copy to Clipboard';  // Revert text
+                    copyButton.style.backgroundColor = '#007BFF';  // Revert background color to blue
+                }, 3000);  // 3 seconds
+            }).catch(err => {
+                console.error('Error copying to clipboard: ', err);
+            });
+        });
+        document.querySelector('.export-btn').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Page Border
+            doc.setLineWidth(0.5);
+            doc.rect(10, 10, 190, 277); // x, y, width, height (border)
+
+            // Title
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text("Front Cover", 105, 20, { align: "center" });
+
+            // Subtitle
+            doc.setFontSize(16);
+            doc.text("Book List", 105, 30, { align: "center" });
+
+            // Table Headers
+            doc.setFontSize(14);
+            doc.text("No.", 20, 50);
+            doc.text("Book Title", 40, 50);
+            doc.text("Author", 140, 50);
+
+            // Fetch books from localStorage and create table content
+            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+
+            savedBooks.forEach((book, index) => {
+                const yPosition = 60 + index * 10;  // Adjust the vertical spacing
+                doc.text(`${index + 1}.`, 20, yPosition);  // Number
+                doc.text(book.title, 40, yPosition);  // Book Title
+                doc.text(book.author, 140, yPosition);  // Author
+            });
+
+            // Save the PDF
+            doc.save('Front_Cover_Book_List.pdf');
+        });
+    </script>
 </body>
 </html>
