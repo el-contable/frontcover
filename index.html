@@ -92,21 +92,23 @@
         .trash-icon {
             position: absolute;
             top: 50%;
+            right: 50px;
             transform: translateY(-50%);
             font-size: 24px;
             opacity: 0;
             transition: opacity 0.3s ease, right 0.3s ease;
-            right: 50px; /* Ensure trash icon is visible on swipe */
         }
 
         .card-moving .trash-icon {
             opacity: 1;
+            right: 10px;  /* Adjust position during the swipe */
         }
 
-        .swiped {
-            transform: translateX(-100%);
-            opacity: 0;
+        .swiped .trash-icon {
+            opacity: 1;  /* Ensure trash icon is visible after swipe */
+            right: 10px;  /* Ensure it's in the correct position */
         }
+
     </style>
 </head>
 <body>
@@ -299,21 +301,30 @@
         // Function to simulate swipe for demonstration purposes
         function simulateSwipe() {
             const bookCard = document.querySelector('.book-card');  // Select the first book card
+            const trashIcon = bookCard?.querySelector('.trash-icon');  // Get the trash icon within the card
+
             if (bookCard) {
                 bookCard.style.transition = 'transform 0.3s ease';  // Set up transition for smooth animation
 
                 // Simulate swipe to left
                 setTimeout(() => {
                     bookCard.style.transform = 'translateX(-50px)';  // Slight swipe left
+                    if (trashIcon) {
+                        trashIcon.style.opacity = '1';  // Make the trash icon visible during swipe
+                        trashIcon.style.right = '10px';  // Adjust the position of the trash icon
+                    }
                 }, 2000);  // Delay 2 seconds after page load
 
                 // Bring the card back to its original position
                 setTimeout(() => {
                     bookCard.style.transform = '';  // Reset transform to original position
+                    if (trashIcon) {
+                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
+                        trashIcon.style.right = '50px';  // Reset the position of the trash icon
+                    }
                 }, 2750);  // After showing the swipe for a brief moment
             }
         }
-
         // Load books from localStorage on page load
         window.onload = function() {
             loadBooks();
