@@ -132,6 +132,8 @@
     </div>
 
     <script>
+        let swipeSimulationRun = false; // Ensure the simulation runs only once
+
         // Function to load books from localStorage
         function loadBooks() {
             const bookList = document.querySelector('.book-list');
@@ -257,7 +259,28 @@
                 }
             }
         }
+        function addBook(bookTitle, bookAuthor) {
+            const bookList = document.querySelector('.book-list');
+            
+            const bookCard = document.createElement('div');
+            bookCard.classList.add('book-card');
+            bookCard.innerHTML = `
+                <div class="book-title">${bookTitle}</div>
+                <div class="book-author">${bookAuthor}</div>
+                <i class="fas fa-trash-alt trash-icon"></i>
+            `;
 
+            addSwipeToDelete(bookCard);
+            bookList.appendChild(bookCard);
+
+            saveBooks(); // Save to localStorage
+
+            // Trigger swipe simulation if it's the first bookCard
+            if (!swipeSimulationRun && document.querySelectorAll('.book-card').length === 1) {
+                simulateSwipe();
+                swipeSimulationRun = true; // Prevent the swipe simulation from running multiple times
+            }
+        }
         // Show progress meter
         function showProgress() {
             document.getElementById('progress').style.display = 'block';
