@@ -151,9 +151,8 @@
                 console.error('Error copying to clipboard: ', err);
             });
         });
-
         // Export Book List functionality
-        document.querySelector('.export-btn').addEventListener('click', function() {
+        document.getElementById('export-to-pdf').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const pageHeight = doc.internal.pageSize.height;  // Get page height in pts
