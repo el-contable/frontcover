@@ -152,18 +152,18 @@
                 bookList.appendChild(bookCard);
             });
         }
-
         // Function to save books to localStorage
         function saveBooks() {
             const books = [];
             document.querySelectorAll('.book-card').forEach(card => {
                 const title = card.querySelector('.book-title').innerText;
                 const author = card.querySelector('.book-author').innerText;
-                books.push({ title, author });
+                const infoIcon = card.querySelector('.info-icon');
+                const storyGraphURL = infoIcon ? infoIcon.href : null; // Get the StoryGraph URL if present
+                books.push({ title, author, storyGraphURL });
             });
             localStorage.setItem('books', JSON.stringify(books));
         }
-
         // Event listener for the "Add Book" button to trigger the file upload
         document.querySelector('.add-book-btn').addEventListener('click', function() {
             document.getElementById('upload-book-image').click(); // Trigger the file upload dialog
