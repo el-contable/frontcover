@@ -355,7 +355,7 @@
 
                 // Simulate swipe to left
                 setTimeout(() => {
-                    bookCard.style.transform = 'translateX(-50px)';  // Slight swipe left
+                    bookCard.style.transform = 'translateX(-100px)';  // Increase the swipe distance for better effect
                     if (trashIcon) {
                         trashIcon.style.opacity = '1';  // Make the trash icon visible during swipe
                         trashIcon.style.right = '10px';  // Adjust the position of the trash icon
@@ -366,10 +366,10 @@
                 setTimeout(() => {
                     bookCard.style.transform = '';  // Reset transform to original position
                     if (trashIcon) {
-                        trashIcon.style.opacity = '1';  // Ensure the trash icon remains visible after swipe
-                        trashIcon.style.right = '10px';  // Keep the position of the trash icon correct
+                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
+                        trashIcon.style.right = '50px';  // Reset the position of the trash icon
                     }
-                }, 2000);  // After showing the swipe for a brief moment
+                }, 4000);  // Wait a little longer to make the swipe effect more visible
             }
         }
 
