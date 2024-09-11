@@ -65,6 +65,9 @@
             display: flex; /* Ensures the info icon aligns with the title */
             align-items: center;
         }
+        .book-title a {
+            margin-left: 8px; /* Adds a small gap between the title and the icon */
+        }
         .book-author {
             font-size: 14px;
         }
@@ -153,8 +156,7 @@
                 bookCard.innerHTML = `
                     <div class="book-title">
                         ${book.title}
-                        <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
-                        ${infoIcon}
+                        <a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>
                     </div>
                     <div class="book-author">${book.author}</div>
                     <i class="fas fa-trash-alt trash-icon"></i>
@@ -212,7 +214,6 @@
             bookCard.innerHTML = `
                 <div class="book-title">
                     ${bookTitle}
-                    <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
                     <a href="${finalStoryGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>
                 </div>
                 <div class="book-author">${bookAuthor}</div>
@@ -271,7 +272,7 @@
             bookCard.innerHTML = `
                 <div class="book-title">
                     ${bookTitle}
-                    <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
+                    <a href="#" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>
                 </div>
                 <div class="book-author">${bookAuthor}</div>
                 <i class="fas fa-trash-alt trash-icon"></i>
