@@ -61,10 +61,10 @@ exports.handler = async function(event, context) {
       console.log("Image processed successfully");
 
     } catch (sharpError) {
-      console.error("Error processing image with sharp:", sharpError);
+      console.error("Error processing image with sharp:", sharpError.message);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Error processing image' })
+        body: JSON.stringify({ error: `Error processing image: ${sharpError.message}` })  // Include error message details
       };
     }
 
@@ -125,19 +125,15 @@ exports.handler = async function(event, context) {
 
       if (data.choices && data.choices[0] && data.choices[0].message) {
         const parsedText = data.choices[0].message.content;
-        const storyGraphURLMatch = parsedText.match(/https:\/\/app\.thestorygraph\.com\/books\/[^\s]+/); // Check for StoryGraph URL in GPT response
-        const storyGraphURL = storyGraphURLMatch ? storyGraphURLMatch[0] : null; // If found, store it
-        // Pass along title, author, and StoryGraph URL
         console.log("Parsed book data:", parsedText);
-
-        // Return the title, author, and StoryGraph URL to the front-end
+    
+        // Return just the title and author to the front-end
         return {
-          statusCode: 200,
-          body: JSON.stringify({ 
-              result: parsedText,
-              storyGraphURL: storyGraphURL  // Include the StoryGraph URL
-          })
-        };
+            statusCode: 200,
+            body: JSON.stringify({ 
+                result: parsedText  // Only pass the extracted text (title and author)
+            })
+        };    
       } else {
         console.error("Unexpected response format from OpenAI:", data);
         return {

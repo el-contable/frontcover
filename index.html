@@ -153,10 +153,11 @@
                 bookCard.innerHTML = `
                     <div class="book-title">
                         ${book.title}
+                        <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
                         ${infoIcon}
                     </div>
                     <div class="book-author">${book.author}</div>
-                    <i class="fas fa-trash-alt trash-icon"></i> <!-- Trash icon added here -->
+                    <i class="fas fa-trash-alt trash-icon"></i>
                 `;
 
                 addSwipeToDelete(bookCard); // Re-apply swipe functionality to each bookCard
@@ -211,11 +212,13 @@
             bookCard.innerHTML = `
                 <div class="book-title">
                     ${bookTitle}
+                    <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
                     <a href="${finalStoryGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>
                 </div>
                 <div class="book-author">${bookAuthor}</div>
                 <i class="fas fa-trash-alt trash-icon"></i>
             `;
+
             addSwipeToDelete(bookCard);
             bookList.appendChild(bookCard);
             saveBooks();  // Save to localStorage
@@ -266,7 +269,10 @@
             const bookCard = document.createElement('div');
             bookCard.classList.add('book-card');
             bookCard.innerHTML = `
-                <div class="book-title">${bookTitle}</div>
+                <div class="book-title">
+                    ${bookTitle}
+                    <span style="display: inline-block;"></span> <!-- Added for correct alignment -->
+                </div>
                 <div class="book-author">${bookAuthor}</div>
                 <i class="fas fa-trash-alt trash-icon"></i>
             `;
@@ -310,17 +316,34 @@
                     const parsedText = data.result;  // Extract text from GPT response
                     const storyGraphURL = data.storyGraphURL;  // Get StoryGraph URL
 
-                    displayDetectedText(parsedText, storyGraphURL);  // Pass the text and StoryGraph URL
+                    if (!parsedText || parsedText.toLowerCase().includes("error")) {
+                        displayErrorMessage("No information was found for this image");
+                    } else {
+                        displayDetectedText(parsedText, storyGraphURL);  // Pass the text and StoryGraph URL
+                    }
                     hideProgress(); // Hide progress bar after processing is complete
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    displayErrorMessage("No information was found for this image"); // Show error message
                     hideProgress(); // Hide progress bar if there's an error
                 });
             };
 
             reader.readAsDataURL(imageFile); // Convert image to base64 format
         }
+
+        // Function to display an error message for a limited time
+        function displayErrorMessage(message) {
+            const progressElement = document.getElementById('progress');
+            progressElement.textContent = message;
+            progressElement.style.color = 'red';
+            setTimeout(() => {
+                progressElement.textContent = '';
+                progressElement.style.color = ''; // Reset color
+            }, 7000); // Display for 7 seconds
+        }
+
 
         // Function to simulate swipe for demonstration purposes
         function simulateSwipe() {
@@ -343,12 +366,13 @@
                 setTimeout(() => {
                     bookCard.style.transform = '';  // Reset transform to original position
                     if (trashIcon) {
-                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
-                        trashIcon.style.right = '50px';  // Reset the position of the trash icon
+                        trashIcon.style.opacity = '1';  // Ensure the trash icon remains visible after swipe
+                        trashIcon.style.right = '10px';  // Keep the position of the trash icon correct
                     }
-                }, 2750);  // After showing the swipe for a brief moment
+                }, 2000);  // After showing the swipe for a brief moment
             }
         }
+
         // Load books from localStorage on page load
         window.onload = function() {
             loadBooks();  // Load saved books
