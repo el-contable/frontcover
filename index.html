@@ -352,25 +352,29 @@
             const trashIcon = bookCard?.querySelector('.trash-icon');  // Get the trash icon within the card
 
             if (bookCard) {
-                bookCard.style.transition = 'transform 0.3s ease';  // Set up transition for smooth animation
+                // Start the swipe simulation with animation
+                bookCard.style.transition = 'transform 0.3s ease';  // Smooth swipe animation
 
-                // Simulate swipe to left
+                // Simulate swipe to the left after a delay
                 setTimeout(() => {
-                    bookCard.style.transform = 'translateX(-100px)';  // Increase the swipe distance for better effect
+                    bookCard.style.transform = 'translateX(-100px)';  // Simulate the card moving left
                     if (trashIcon) {
-                        trashIcon.style.opacity = '1';  // Make the trash icon visible during swipe
+                        trashIcon.style.opacity = '1';  // Show the trash icon during swipe
                         trashIcon.style.right = '10px';  // Adjust the position of the trash icon
                     }
-                }, 2000);  // Delay 2 seconds after page load
+                }, 2000);  // Delay the swipe for 2 seconds after page load
 
-                // Bring the card back to its original position
+                // After the swipe, reset the card and the trash icon
                 setTimeout(() => {
-                    bookCard.style.transform = '';  // Reset transform to original position
+                    // Reset card position
+                    bookCard.style.transform = '';  // Move the card back to its original position
+
+                    // Reset the trash icon visibility and position
                     if (trashIcon) {
-                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe animation
+                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe
                         trashIcon.style.right = '50px';  // Reset the position of the trash icon
                     }
-                }, 4000);  // Wait a little longer to make the swipe effect more visible
+                }, 4000);  // Wait a bit longer to show the swipe effect
             }
         }
 
