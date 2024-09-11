@@ -232,34 +232,34 @@
 
             cardElement.addEventListener('touchstart', function(event) {
                 touchstartX = event.changedTouches[0].screenX;
-                cardElement.style.transition = 'transform 0.3s ease'; // Add transition for the individual card
+                cardElement.style.transition = 'transform 0.3s ease';  // Add transition for swipe
             });
 
             cardElement.addEventListener('touchmove', function(event) {
-                event.preventDefault();  // Prevent the whole page from moving
+                event.preventDefault();  // Prevent page scrolling while swiping
                 const currentX = event.changedTouches[0].screenX;
                 const deltaX = currentX - touchstartX;
 
-                if (deltaX < 0) {  // Only handle left swipe
+                if (deltaX < 0) {  // Handle left swipe only
                     cardElement.style.transform = `translateX(${deltaX}px)`;
-                    cardElement.classList.add('card-moving');
+                    cardElement.classList.add('card-moving');  // Add class to indicate movement
                 }
             });
 
             cardElement.addEventListener('touchend', function(event) {
                 touchendX = event.changedTouches[0].screenX;
-                handleSwipe(cardElement);
+                handleSwipe(cardElement);  // Handle the final swipe action
             });
 
             function handleSwipe(cardElement) {
-                if (touchendX < touchstartX - 150) {  // Swipe left threshold
-                    cardElement.classList.add('swiped'); // Add swipe animation class
+                if (touchendX < touchstartX - 150) {  // Threshold for swiping left
+                    cardElement.classList.add('swiped');  // Add swipe class for animation
                     setTimeout(() => {
-                        cardElement.remove(); // Remove after animation
-                        saveBooks(); // Save updated list to localStorage
-                    }, 300); // Delay to allow animation
+                        cardElement.remove();  // Remove the card after swipe
+                        saveBooks();  // Update localStorage
+                    }, 300);  // Delay for animation
                 } else {
-                    cardElement.style.transform = ''; // Reset position if not swiped far enough
+                    cardElement.style.transform = '';  // Reset position if not swiped far enough
                     cardElement.classList.remove('card-moving');
                 }
             }
@@ -347,31 +347,30 @@
 
 
         // Function to simulate swipe for demonstration purposes
+        let swipeSimulationDone = false;  // Flag to track if simulation has run
+
         function simulateSwipe() {
             const bookCard = document.querySelector('.book-card');  // Select the first book card
             const trashIcon = bookCard?.querySelector('.trash-icon');  // Get the trash icon within the card
 
-            if (bookCard) {
-                // Start the swipe simulation with animation
-                bookCard.style.transition = 'transform 0.3s ease';  // Smooth swipe animation
+            if (bookCard && !swipeSimulationDone) {  // Only run the simulation if it hasn't been done
+                swipeSimulationDone = true;  // Mark simulation as done
+                bookCard.style.transition = 'transform 0.3s ease';  // Set up transition for smooth animation
 
-                // Simulate swipe to the left after a delay
+                // Simulate swipe to left
                 setTimeout(() => {
-                    bookCard.style.transform = 'translateX(-100px)';  // Simulate the card moving left
+                    bookCard.style.transform = 'translateX(-100px)';  // Move card left to simulate swipe
                     if (trashIcon) {
-                        trashIcon.style.opacity = '1';  // Show the trash icon during swipe
+                        trashIcon.style.opacity = '1';  // Make the trash icon visible
                         trashIcon.style.right = '10px';  // Adjust the position of the trash icon
                     }
-                }, 2000);  // Delay the swipe for 2 seconds after page load
+                }, 2000);  // Delay the simulation
 
-                // After the swipe, reset the card and the trash icon
+                // Reset the card and the trash icon to the original state
                 setTimeout(() => {
-                    // Reset card position
-                    bookCard.style.transform = '';  // Move the card back to its original position
-
-                    // Reset the trash icon visibility and position
+                    bookCard.style.transform = '';  // Reset card position
                     if (trashIcon) {
-                        trashIcon.style.opacity = '0';  // Hide the trash icon after swipe
+                        trashIcon.style.opacity = '0';  // Hide the trash icon
                         trashIcon.style.right = '50px';  // Reset the position of the trash icon
                     }
                 }, 4000);  // Wait a bit longer to show the swipe effect
