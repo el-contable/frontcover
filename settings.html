@@ -134,6 +134,13 @@
         // Copy to Clipboard functionality
         document.getElementById('copy-to-clipboard').addEventListener('click', function() {
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+            
+            // Check if there are no books to copy
+            if (savedBooks.length === 0) {
+                alert("No books to copy.");
+                return;  // Stop further execution if no books are available
+            }
+            
             const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n\n');  // Format with extra space between entries
 
             // Copy text to clipboard
@@ -153,18 +160,23 @@
         });
         // Export Book List functionality
         document.getElementById('export-to-pdf').addEventListener('click', function() {
+            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+
+            // Check if there are no books to export
+            if (savedBooks.length === 0) {
+                alert("No books to export.");
+                return;  // Stop further execution if no books are available
+            }
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const pageHeight = doc.internal.pageSize.height;  // Get page height in pts
             let yPosition = 50;  // Initial y position to start writing content
             const lineHeight = 20;  // Height between lines
-            
+
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(22);
             doc.text("Front Cover - Book List", 20, 20);  // Title at the top
-
-            // Fetch books from localStorage
-            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(14);
@@ -175,7 +187,7 @@
                     doc.addPage();  // Add new page
                     yPosition = 50;  // Reset yPosition for new page
                 }
-                
+
                 // Add book title and author
                 doc.text(`${index + 1}. ${book.title}`, 20, yPosition);  // Book Title
                 doc.text(`${book.author}`, 20, yPosition + 8);  // Author indented below the title
