@@ -53,45 +53,6 @@
         .settings-label {
             font-size: 16px;
         }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #007BFF;
-        }
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
         .export-btn {
             display: block;
             width: 100%;
@@ -118,6 +79,7 @@
                 <i class="fas fa-chevron-left"></i>
             </a>
         </div>
+
         <div class="settings-item">
             <button class="export-btn" id="copy-to-clipboard">
                 <i class="fas fa-clipboard"></i> Copy to Clipboard
@@ -128,76 +90,87 @@
                 <i class="fas fa-file-export"></i> Export Book List
             </button>
         </div>
+
+        <!-- New Restore Button -->
+        <div class="settings-item">
+            <button class="export-btn" id="restore-books">
+                <i class="fas fa-sync-alt"></i> Restore Book List
+            </button>
+        </div>
     </div>
-    <!-- JavaScript for Copy to Clipboard functionality -->
+
+    <!-- JavaScript for Settings -->
     <script>
         // Copy to Clipboard functionality
         document.getElementById('copy-to-clipboard').addEventListener('click', function() {
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
             
-            // Check if there are no books to copy
             if (savedBooks.length === 0) {
                 alert("No books to copy.");
-                return;  // Stop further execution if no books are available
+                return;
             }
-            
-            const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n\n');  // Format with extra space between entries
 
-            // Copy text to clipboard
+            const bookListText = savedBooks.map(book => `${book.title} - ${book.author}`).join('\n\n');
             navigator.clipboard.writeText(bookListText).then(() => {
                 const copyButton = document.getElementById('copy-to-clipboard');
-                copyButton.innerHTML = '<i class="fas fa-check"></i> Copied';  // Change text to "Copied"
-                copyButton.style.backgroundColor = '#28a745';  // Change background to green
-
-                // Revert the button text and background color after 3 seconds
+                copyButton.innerHTML = '<i class="fas fa-check"></i> Copied';
+                copyButton.style.backgroundColor = '#28a745';
                 setTimeout(() => {
-                    copyButton.innerHTML = '<i class="fas fa-clipboard"></i> Copy to Clipboard';  // Revert text
-                    copyButton.style.backgroundColor = '#007BFF';  // Revert background color to blue
-                }, 3000);  // 3 seconds
+                    copyButton.innerHTML = '<i class="fas fa-clipboard"></i> Copy to Clipboard';
+                    copyButton.style.backgroundColor = '#007BFF';
+                }, 3000);
             }).catch(err => {
                 console.error('Error copying to clipboard: ', err);
             });
         });
+
         // Export Book List functionality
         document.getElementById('export-to-pdf').addEventListener('click', function() {
             const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
-            // Check if there are no books to export
             if (savedBooks.length === 0) {
                 alert("No books to export.");
-                return;  // Stop further execution if no books are available
+                return;
             }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const pageHeight = doc.internal.pageSize.height;  // Get page height in pts
-            let yPosition = 50;  // Initial y position to start writing content
-            const lineHeight = 20;  // Height between lines
+            const pageHeight = doc.internal.pageSize.height;
+            let yPosition = 50;
+            const lineHeight = 20;
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(22);
-            doc.text("Front Cover - Book List", 20, 20);  // Title at the top
+            doc.text("Front Cover - Book List", 20, 20);
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(14);
 
             savedBooks.forEach((book, index) => {
-                // Check if adding another entry would go past the bottom of the page
                 if (yPosition > pageHeight - 40) {
-                    doc.addPage();  // Add new page
-                    yPosition = 50;  // Reset yPosition for new page
+                    doc.addPage();
+                    yPosition = 50;
                 }
-
-                // Add book title and author
-                doc.text(`${index + 1}. ${book.title}`, 20, yPosition);  // Book Title
-                doc.text(`${book.author}`, 20, yPosition + 8);  // Author indented below the title
-                yPosition += lineHeight;  // Move yPosition for the next entry
+                doc.text(`${index + 1}. ${book.title}`, 20, yPosition);
+                doc.text(`${book.author}`, 20, yPosition + 8);
+                yPosition += lineHeight;
             });
 
-            // Create a Blob from the PDF and open in a new tab
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl);  // Opens the PDF in a new tab
+            window.open(pdfUrl);
+        });
+
+        // Restore Book List functionality
+        document.getElementById('restore-books').addEventListener('click', function() {
+            loadBooksFromIndexedDB().then((books) => {
+                if (books.length === 0) {
+                    alert('No books found in backup!');
+                    return;
+                }
+                localStorage.setItem('books', JSON.stringify(books));
+                alert('Book list restored from IndexedDB!');
+            }).catch((error) => console.error('Failed to restore from IndexedDB:', error));
         });
     </script>
 </body>
