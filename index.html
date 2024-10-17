@@ -137,22 +137,34 @@
     <script>
         let swipeSimulationRun = false; // Ensure the simulation runs only once
 
-        // Function to load books from localStorage
         function loadBooks() {
             const bookList = document.querySelector('.book-list');
-            const savedBooks = JSON.parse(localStorage.getItem('books')) || [];
+            let savedBooks = JSON.parse(localStorage.getItem('books')) || [];
 
-            savedBooks.forEach(book => {
+            // If localStorage is empty, try loading from IndexedDB
+            if (savedBooks.length === 0) {
+                loadBooksFromIndexedDB().then((books) => {
+                    if (books.length > 0) {
+                        savedBooks = books;
+                    }
+                    renderBooks(savedBooks);
+                }).catch((error) => console.error('Failed to load from IndexedDB:', error));
+            } else {
+                renderBooks(savedBooks);
+            }
+        }
+
+        // Function to render books on the page (this keeps your current code)
+        function renderBooks(books) {
+            const bookList = document.querySelector('.book-list');
+            books.forEach(book => {
                 const bookCard = document.createElement('div');
                 bookCard.classList.add('book-card');
 
-                // Log the StoryGraph URL being retrieved for debugging
                 console.log(book.storyGraphURL);
 
-                // Add the info icon if the StoryGraph URL is present
                 const infoIcon = book.storyGraphURL ? `<a href="${book.storyGraphURL}" target="_blank" class="info-icon"><i class="fas fa-info-circle"></i></a>` : '';
 
-                // Updated to correctly display title, author, info icon (if available), and trash icon
                 bookCard.innerHTML = `
                     <div class="book-title">
                         ${book.title}
@@ -162,11 +174,11 @@
                     <i class="fas fa-trash-alt trash-icon"></i>
                 `;
 
-                addSwipeToDelete(bookCard); // Re-apply swipe functionality to each bookCard
-                bookList.appendChild(bookCard); // Append to the book list
+                addSwipeToDelete(bookCard); // Apply swipe-to-delete functionality
+                bookList.appendChild(bookCard); // Append the book card to the list
             });
         }
-        // Function to save books to localStorage
+        
         function saveBooks() {
             const books = [];
             document.querySelectorAll('.book-card').forEach(card => {
@@ -176,11 +188,16 @@
                 const storyGraphURL = infoIcon ? infoIcon.href : null; // Get the StoryGraph URL if present
                 const title = titleElement.childNodes[0].textContent.trim(); // Extract title text separately from icon
 
-                console.log({ title, author, storyGraphURL }); // Log the values
+                console.log({ title, author, storyGraphURL });
 
                 books.push({ title, author, storyGraphURL });
             });
+
+            // Save to localStorage
             localStorage.setItem('books', JSON.stringify(books));
+
+            // Save to IndexedDB as a backup
+            saveBooksToIndexedDB(books);
         }
 
         // Event listener for the "Add Book" button to trigger the file upload
@@ -384,6 +401,7 @@
             document.querySelectorAll('.book-card').forEach(addSwipeToDelete);
             simulateSwipe();  // Simulate swipe after loading the books
         };
-    </script>    
+    </script>
+    <script src="database.js"></script>    
 </body>
 </html>
